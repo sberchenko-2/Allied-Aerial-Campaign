@@ -1,0 +1,9 @@
+.row_flex {
+    display: flex;
+    flex-direction: row;
+}
+
+.column_flex {
+    display: flex;
+    flex-direction: column;
+}
