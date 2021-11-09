@@ -97,6 +97,12 @@ function CreateGlobe(svg, config) {
     function drawMarkers() {
         const markers = markerGroup.selectAll('circle')
             .data(locations);
+        
+        // Scale marker size by current zoom
+        var marker_size = 3 * (projection.scale() / initialScale);
+        var max_size = 5;
+        marker_size = marker_size >= max_size ? max_size : marker_size;
+
         markers
             .enter()
             .append('circle')
@@ -108,7 +114,7 @@ function CreateGlobe(svg, config) {
                 gdistance = d3.geoDistance(coordinate, projection.invert(center));
                 return gdistance > 1.57 ? 'none' : 'steelblue';
             })
-            .attr('r', 7);
+            .attr('r', marker_size);
   
         markerGroup.each(function () {
             this.parentNode.appendChild(this);
