@@ -16,6 +16,7 @@ target_longitude = list(df["LONGITUDE"])
 target_latitude = list(df["LATITUDE"])
 base_names = list(df["TAKEOFF_BASE"])
 theaters = list(df["THEATER"])
+tgt_types = list(df["TGT_TYPE"])
 
 # Initialize arrays
 takeoff = []
@@ -30,6 +31,7 @@ for i in range(rows):
     targ_lat = target_latitude[i]
     base_name = base_names[i]
     theater = theaters[i]
+    tgt = tgt_types[i]
 
     # Get rid of an entry if any coords are NaN (most of the takeoff coords are NaN)
     if math.isnan(take_lon) or math.isnan(take_lat) or math.isnan(targ_lon) or math.isnan(targ_lat):
@@ -41,6 +43,9 @@ for i in range(rows):
     
     if type(theater) != type(""):
         theater = "Unknown"
+
+    if type(tgt) != type(""):
+        tgt = "UNIDENTIFIED TARGET" 
 
     # I'm pretty sure the Allies didn't fly 300+ missions out of the poles ◔_◔
     if take_lat > 4000 or targ_lat > 4000:
@@ -56,11 +61,12 @@ for i in range(rows):
         "longitude": take_lon,
         "latitude": take_lat,
         "base_name": base_name,
-        "theater": theater
+        "theater": theater,
     })
     target.append({
         "longitude": targ_lon,
-        "latitude": targ_lat
+        "latitude": targ_lat,
+        "tgt_type": tgt
     })
 
 print(f"Originally had {rows} datapoints, after cleaning only have {len(target)}")
