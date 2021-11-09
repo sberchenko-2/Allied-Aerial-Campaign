@@ -206,12 +206,18 @@ function CreateGlobe(svg, config) {
                     return gdistance > 1.57 ? 'none' : 'steelblue';
                 })
                 .attr('r', marker_size)
-                
+
                 .style('cursor', 'pointer')
                 .style("stroke-width", 2)
                 .on('mouseover', (event, d) => {
                     let trgt = event.currentTarget;
-                    console.log(d)
+
+                    // Show tooltip
+                    let tooltip = document.getElementById("base_tooltip");
+                    tooltip.style.visibility = "visible";
+                    tooltip.style.left = event.pageX + "px";
+                    tooltip.style.top = event.pageY + "px";
+                    tooltip.innerHTML = "Base Name: " + d.base_name + "<br/>Theater: " + d.theater;
 
                     d3.select(trgt).transition()
                         .duration('250')
@@ -221,6 +227,11 @@ function CreateGlobe(svg, config) {
                 })
                 .on('mouseout', (event, d) => {
                     let trgt = event.currentTarget;
+
+                    // Hide tooltip
+                    let tooltip = document.getElementById("base_tooltip");
+                    tooltip.style.visibility = "hidden";
+
                     d3.select(trgt).transition()
                         .duration('250')
                         .style("stroke", "none")
