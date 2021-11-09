@@ -106,6 +106,15 @@ function CreateGlobe(svg, config) {
             let takeoffData = values[1];
             let worldData = values[2];
 
+            // Add background
+            svg.append('path')
+                .datum({
+                    type: 'Sphere'
+                })
+                .style('cursor', 'grab')
+                .attr('fill', 'lightblue')
+                .attr('d', path);
+
             svg.selectAll(".segment")
                 .data(topojson.feature(worldData, worldData.objects.countries).features)
                 .enter().append("path")
@@ -114,7 +123,10 @@ function CreateGlobe(svg, config) {
                 .style("stroke", "#888")
                 .style("stroke-width", "1px")
                 .style("fill", (d, i) => '#e5e5e5')
-                .style("opacity", ".6");
+                .style("opacity", ".6")
+                .style('cursor', 'grab');
+            
+            svg.style("fill", "blue");
             
             target_locations = targetData;
             takeoff_locations = takeoffData;
@@ -147,7 +159,8 @@ function CreateGlobe(svg, config) {
             .merge(plane_paths)
             .style("stroke", "red")
             .style("fill", "none")
-            .style("stroke-width", 3)
+            .style("stroke-width", 2)
+            .style('cursor', 'pointer')
             .on('mouseover', (event, d) => {
                 let trgt = event.currentTarget;
                 d3.select(trgt).transition()
@@ -171,7 +184,7 @@ function CreateGlobe(svg, config) {
     function drawMarkers() {
         // Scale marker size by current zoom
         var marker_size = 3 * (projection.scale() / initialScale);
-        var max_size = 5;
+        var max_size = 3;
         marker_size = marker_size >= max_size ? max_size : marker_size;
 
         // Draw takeoff markers
