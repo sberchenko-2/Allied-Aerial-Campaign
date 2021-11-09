@@ -289,7 +289,7 @@ function CreateGlobe(svg, config) {
                     let trgt = event.currentTarget;
 
                     // Show tooltip
-                    let tooltip_text = "Base Name: " + d.base_name + "<br/>Theater: " + d.theater;
+                    let tooltip_text = "Base Name: " + d.base_name;
                     set_tooltip_pos(tkf_tooltip, event.pageX, event.pageY)
                     set_tooltip_html(tkf_tooltip, tooltip_text);
                     show_tooltip(tkf_tooltip);
