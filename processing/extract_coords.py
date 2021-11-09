@@ -22,7 +22,7 @@ target_latitude = list(df["LATITUDE"])
 takeoff = []
 target = []
 
-# Fill in arrays, get rid of any nulls
+# Fill in arrays, get rid of any nulls and wierd outliers ( the dataset isn't perfect :( )
 rows = len(takeoff_longitude)
 for i in range(rows):
     take_lon = takeoff_longitude[i]
@@ -33,6 +33,7 @@ for i in range(rows):
     if math.isnan(take_lon) or math.isnan(take_lat) or math.isnan(targ_lon) or math.isnan(targ_lat):
         continue
 
+    # I'm pretty sure the Allies didn't fly 300+ missions out of the poles ◔_◔
     if take_lat > 4000 or targ_lat > 4000:
         continue
     
@@ -45,9 +46,9 @@ for i in range(rows):
         "latitude": targ_lat
     })
 
+print(f"Originally had {rows} datapoints, after cleaning only have {len(target)}")
+
 # Convert arrays to json objects and save them
-print(rows)
-print(len(target))
 with open(f"{src_dir}/data/takeoff_locations.json", "w") as f:
     json.dump(takeoff, f)
 
