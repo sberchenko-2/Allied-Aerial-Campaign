@@ -69,6 +69,22 @@ function CreateGlobe(svg, config) {
         }
     }))
 
+    // Updates the data being displayed on the globe
+    function updateMarkers(takeoff_markers, target_markers, path_data) {
+        console.log("updating markers");
+
+        // Remove old DOM elements
+        planePaths.selectAll("path").remove();
+        targetMarkers.selectAll("circle").remove();
+        takeoffMarkers.selectAll("circle").remove();
+
+        // Update data arrays and draw new markers
+        takeoff_locations = takeoff_markers;
+        target_locations = target_markers;
+        plane_path_data = path_data;
+        drawMarkers();
+    }
+
     // Draws the globe onto the svg
     function drawGlobe() {
         // Files to load
@@ -193,4 +209,6 @@ function CreateGlobe(svg, config) {
         console.log("plane_paths has " + document.getElementById("plane_paths").childElementCount + " children");
         console.log(" ");
     }
+
+    return updateMarkers;
 }

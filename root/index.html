@@ -36,8 +36,11 @@
     // Create globe
     const svg = d3.select('svg')
         .attr('width', globe_config.width).attr('height', globe_config.height);
-    CreateGlobe(svg, globe_config);
+    let updateMarkers = CreateGlobe(svg, globe_config);
     
+    // Example of how to bind update function to a button / etc:
+    //
+    // document.getElementById("test_button").onclick = function(){updateMarkers(takeoff_locations, target_locations, plane_path_data);};
 </script>
 
 
