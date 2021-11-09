@@ -28,6 +28,7 @@ function CreateGlobe(svg, config) {
     // D3 const vars
     const takeoffMarkers  = svg.append('g'),
           targetMarkers   = svg.append('g'),
+          plane_paths     = svg.append('g'), 
           projection      = d3.geoOrthographic(),
           initialScale    = projection.scale(),
           path            = d3.geoPath().projection(projection),
@@ -35,7 +36,8 @@ function CreateGlobe(svg, config) {
 
     // Marker data
     var takeoff_locations = [],
-        target_locations  = [];
+        target_locations  = [],
+        plane_path_data   = [];
     
     // Draw globe
     drawGlobe();
@@ -97,17 +99,40 @@ function CreateGlobe(svg, config) {
                 .style("stroke-width", "1px")
                 .style("fill", (d, i) => '#e5e5e5')
                 .style("opacity", ".6");
-                target_locations = targetData;
-                takeoff_locations = takeoffData;
-                drawMarkers();  
+            
+            target_locations = targetData;
+            takeoff_locations = takeoffData;
+
+            for (let i = 0; i < target_locations.length; i++) {
+                plane_path_data[i] = {
+                    type: "LineString",
+                    coordinates: [
+                        [takeoff_locations[i].longitude, takeoff_locations[i].latitude],
+                        [target_locations[i].longitude, target_locations[i].latitude]
+                    ]
+                }
+            }
+            
+            drawMarkers();
         });
     }
   
-    // Draws the markers onto the globe
+    // Draws the markers and paths onto the globe
     function drawMarkers() {
+        // Draw paths
+        plane_path_data.forEach(function (e) {
+            plane_paths.append("path")
+                .attr("d", path(e))
+                .style("stroke", "red")
+                .style("stroke-width", 7);
+        });
+
+        plane_paths.each(function () {
+            this.parentNode.appendChild(this);
+        });
+
         const target_markers = targetMarkers.selectAll('circle')
             .data(target_locations);
-        
         
         const takeoff_markers = takeoffMarkers.selectAll('circle')
             .data(takeoff_locations);
@@ -126,7 +151,7 @@ function CreateGlobe(svg, config) {
             .attr('fill', d => {
                 const coordinate = [d.longitude, d.latitude];
                 gdistance = d3.geoDistance(coordinate, projection.invert(center));
-                return gdistance > 1.57 ? 'none' : 'red';
+                return gdistance > 1.57 ? 'none' : 'black';
             })
             .attr('r', marker_size);
 
@@ -143,13 +168,14 @@ function CreateGlobe(svg, config) {
             })
             .attr('r', marker_size);
   
-        target_markers.each(function () {
+        // Ensures that the markers are drawn on top of the map
+        targetMarkers.each(function () {
             this.parentNode.appendChild(this);
         });
-
         takeoffMarkers.each(function () {
             this.parentNode.appendChild(this);
         });
+
     }
 
     // Draws the graticule onto the globe
