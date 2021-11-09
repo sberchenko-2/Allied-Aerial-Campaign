@@ -28,7 +28,8 @@ function CreateGlobe(svg, config) {
           initialScale    = projection.scale(),
           path            = d3.geoPath().projection(projection),
           tgt_tooltip     = "base_tooltip",
-          tkf_tooltip     = "base_tooltip";
+          tkf_tooltip     = "base_tooltip",
+          path_tooltip    = "base_tooltip";
 
     // Plotting data
     var takeoff_locations = [],
@@ -91,7 +92,11 @@ function CreateGlobe(svg, config) {
                     coordinates: [
                         [takeoff_locations[i].longitude, takeoff_locations[i].latitude],
                         [target_locations[i].longitude, target_locations[i].latitude]
-                    ]
+                    ],
+                    ac_attacking: takeoff_locations[i].ac_attacking,
+                    ac_name:      takeoff_locations[i].ac_name,
+                    total_tons:   takeoff_locations[i].total_tons,
+                    msn_date:     takeoff_locations[i].msn_date,
                 }
             }
             
@@ -168,12 +173,25 @@ function CreateGlobe(svg, config) {
             .style('cursor', 'pointer')
             .on('mouseover', (event, d) => {
                 let trgt = event.currentTarget;
+
+                // Show tooltip
+                let tooltip_text = "Mission Date: " + d.msn_date + 
+                                   "<br/>Number of Aircraft Involved: " + d.ac_attacking + 
+                                   "<br/>Type of Aircraft Used: " + d.ac_name + 
+                                   "<br/>Tons of Ordinance Dropped: " + d.total_tons;
+                set_tooltip_pos(path_tooltip, event.pageX, event.pageY)
+                set_tooltip_html(path_tooltip, tooltip_text);
+                show_tooltip(path_tooltip);
+
                 d3.select(trgt).transition()
                     .duration('50')
                     .style("stroke", "black");  
                 trgt.parentNode.appendChild(trgt);
             })
             .on('mouseout', (event, d) => {
+                // Hide tooltip
+                hide_tooltip(path_tooltip)
+
                 d3.select(event.currentTarget).transition()
                     .duration('50')
                     .style("stroke", "red");
@@ -191,61 +209,6 @@ function CreateGlobe(svg, config) {
         var marker_size = 3 * (projection.scale() / initialScale);
         var max_size = 3;
         marker_size = marker_size >= max_size ? max_size : marker_size;
-
-        // Draw takeoff markers
-        if (show_tkofs) {
-            // Propagate marker data to markers
-            const takeoff_markers = takeoffMarkers.selectAll('circle')
-                .data(takeoff_locations);
-            
-            // Draw markers
-            takeoff_markers
-                .enter()
-                .append('circle')
-                .merge(takeoff_markers)
-                .attr('cx', d => projection([d.longitude, d.latitude])[0])
-                .attr('cy', d => projection([d.longitude, d.latitude])[1])
-                .attr('fill', d => {
-                    let c = path({type: 'Point', coordinates: [d.longitude, d.latitude]});
-                    return !c ? 'none' : 'steelblue';
-                })
-                .attr('r', marker_size)
-
-                .style('cursor', 'pointer')
-                .style("stroke-width", 2)
-                .on('mouseover', (event, d) => {
-                    let trgt = event.currentTarget;
-
-                    // Show tooltip
-                    let tooltip_text = "Base Name: " + d.base_name + "<br/>Theater: " + d.theater;
-                    set_tooltip_pos(tkf_tooltip, event.pageX, event.pageY)
-                    set_tooltip_html(tkf_tooltip, tooltip_text);
-                    show_tooltip(tkf_tooltip);
-
-                    d3.select(trgt).transition()
-                        .duration('250')
-                        .style("stroke", "white")
-                        .attr("r", marker_size + 2)
-                    trgt.parentNode.appendChild(trgt);
-                })
-                .on('mouseout', (event, d) => {
-                    let trgt = event.currentTarget;
-
-                    // Hide tooltip
-                    hide_tooltip(tkf_tooltip)
-
-                    d3.select(trgt).transition()
-                        .duration('250')
-                        .style("stroke", "none")
-                        .attr("r", marker_size);
-                    trgt.parentNode.appendChild(trgt);
-                });
-            
-            // Ensures that the markers and paths are drawn on top of the map
-            takeoffMarkers.each(function () {
-                this.parentNode.appendChild(this);
-            });
-        }
 
         // Draw target markers
         if (show_trgts) {
@@ -297,6 +260,61 @@ function CreateGlobe(svg, config) {
 
             // Ensures that the markers and paths are drawn on top of the map
             targetMarkers.each(function () {
+                this.parentNode.appendChild(this);
+            });
+        }
+        
+        // Draw takeoff markers
+        if (show_tkofs) {
+            // Propagate marker data to markers
+            const takeoff_markers = takeoffMarkers.selectAll('circle')
+                .data(takeoff_locations);
+            
+            // Draw markers
+            takeoff_markers
+                .enter()
+                .append('circle')
+                .merge(takeoff_markers)
+                .attr('cx', d => projection([d.longitude, d.latitude])[0])
+                .attr('cy', d => projection([d.longitude, d.latitude])[1])
+                .attr('fill', d => {
+                    let c = path({type: 'Point', coordinates: [d.longitude, d.latitude]});
+                    return !c ? 'none' : 'steelblue';
+                })
+                .attr('r', marker_size)
+
+                .style('cursor', 'pointer')
+                .style("stroke-width", 2)
+                .on('mouseover', (event, d) => {
+                    let trgt = event.currentTarget;
+
+                    // Show tooltip
+                    let tooltip_text = "Base Name: " + d.base_name + "<br/>Theater: " + d.theater;
+                    set_tooltip_pos(tkf_tooltip, event.pageX, event.pageY)
+                    set_tooltip_html(tkf_tooltip, tooltip_text);
+                    show_tooltip(tkf_tooltip);
+
+                    d3.select(trgt).transition()
+                        .duration('250')
+                        .style("stroke", "white")
+                        .attr("r", marker_size + 2)
+                    trgt.parentNode.appendChild(trgt);
+                })
+                .on('mouseout', (event, d) => {
+                    let trgt = event.currentTarget;
+
+                    // Hide tooltip
+                    hide_tooltip(tkf_tooltip)
+
+                    d3.select(trgt).transition()
+                        .duration('250')
+                        .style("stroke", "none")
+                        .attr("r", marker_size);
+                    trgt.parentNode.appendChild(trgt);
+                });
+            
+            // Ensures that the markers and paths are drawn on top of the map
+            takeoffMarkers.each(function () {
                 this.parentNode.appendChild(this);
             });
         }
