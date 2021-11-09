@@ -36,6 +36,11 @@ for i in range(rows):
     # I'm pretty sure the Allies didn't fly 300+ missions out of the poles ◔_◔
     if take_lat > 4000 or targ_lat > 4000:
         continue
+
+    # Nor was there ever a mission leaving from Tunisia to bomb Japan @__@
+    if abs(targ_lat - 32.9) <= 0.1 and abs(targ_lon - 132.07) <= 0.1 and \
+       abs(take_lat - 31.87) <= 0.1 and abs(take_lon - 24.40) <= 0.1:
+        continue
     
     takeoff.append({
         "longitude": take_lon,
