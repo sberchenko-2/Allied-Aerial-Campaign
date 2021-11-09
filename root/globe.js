@@ -11,8 +11,6 @@
 //   - scroll_sens:     scrolling sensitivity
 //   - max_zoom:        relative max zoom
 //   - min_zoom:        relative min zoom
-//
-//   - draw_graticule:  whether or not to draw graticule
 function CreateGlobe(svg, config) {
     // Set config vars
     const width          = config.width,
@@ -23,12 +21,11 @@ function CreateGlobe(svg, config) {
           scroll_sens    = config.scroll_sens,
           max_zoom       = config.max_zoom,
           min_zoom       = config.min_zoom;
-          draw_graticule = config.draw_graticule
     
     // D3 const vars
-    const takeoffMarkers  = svg.append('g'),
-          targetMarkers   = svg.append('g'),
-          plane_paths     = svg.append('g'), 
+    const takeoffMarkers  = svg.append('g').attr("id", "takeoff_markers"),
+          targetMarkers   = svg.append('g').attr("id", "target_markers"),
+          planePaths      = svg.append('g').attr("id", "plane_paths"), 
           projection      = d3.geoOrthographic(),
           initialScale    = projection.scale(),
           path            = d3.geoPath().projection(projection),
@@ -41,9 +38,6 @@ function CreateGlobe(svg, config) {
     
     // Draw globe
     drawGlobe();
-    if (draw_graticule) {
-        drawGraticule()
-    }
 
     // Enable dragging
     svg.call(d3.drag().on('drag', (event, d) => {
@@ -119,29 +113,38 @@ function CreateGlobe(svg, config) {
   
     // Draws the markers and paths onto the globe
     function drawMarkers() {
+        let start = Date.now();
+
+        // Propagate path data to paths
+        const plane_paths = planePaths.selectAll("path")
+            .data(plane_path_data);
+
         // Draw paths
-        plane_path_data.forEach(function (e) {
-            plane_paths.append("path")
-                .attr("d", path(e))
-                .style("stroke", "red")
-                .style("stroke-width", 7);
-        });
+        plane_paths
+            .enter()
+            .append("path")
+            .attr("d", path)
+            .merge(plane_paths)
+            .style("stroke", "red")
+            .style("fill", "none")
+            .style("stroke-width", 3);
 
-        plane_paths.each(function () {
-            this.parentNode.appendChild(this);
-        });
+        console.log("drawing paths took " + (Date.now() - start) + "ms");
+        let marker_start = Date.now();
 
-        const target_markers = targetMarkers.selectAll('circle')
-            .data(target_locations);
-        
-        const takeoff_markers = takeoffMarkers.selectAll('circle')
-            .data(takeoff_locations);
-        
         // Scale marker size by current zoom
         var marker_size = 3 * (projection.scale() / initialScale);
         var max_size = 5;
         marker_size = marker_size >= max_size ? max_size : marker_size;
 
+        // Propagate marker data to markers
+        const target_markers = targetMarkers.selectAll('circle')
+            .data(target_locations);
+        
+        const takeoff_markers = takeoffMarkers.selectAll('circle')
+            .data(takeoff_locations);
+
+        // Draw markers
         target_markers
             .enter()
             .append('circle')
@@ -167,8 +170,15 @@ function CreateGlobe(svg, config) {
                 return gdistance > 1.57 ? 'none' : 'steelblue';
             })
             .attr('r', marker_size);
+        
+        console.log("marker update took " + (Date.now() - marker_start) + "ms");
+        marker_start = Date.now();
   
-        // Ensures that the markers are drawn on top of the map
+        // Ensures that the markers and paths are drawn on top of the map
+        planePaths.each(function () {
+            this.parentNode.appendChild(this);
+        });      
+
         targetMarkers.each(function () {
             this.parentNode.appendChild(this);
         });
@@ -176,18 +186,11 @@ function CreateGlobe(svg, config) {
             this.parentNode.appendChild(this);
         });
 
+        console.log("move-to-front update took " + (Date.now() - marker_start) + "ms");
+        console.log("total draw update took " + (Date.now() - start) + "ms");
+        console.log("target_markers has " + document.getElementById("target_markers").childElementCount + " children");
+        console.log("takeoff_markers has " + document.getElementById("takeoff_markers").childElementCount + " children");
+        console.log("plane_paths has " + document.getElementById("plane_paths").childElementCount + " children");
+        console.log(" ");
     }
-
-    // Draws the graticule onto the globe
-    function drawGraticule() {
-        const graticule = d3.geoGraticule()
-            .step([10, 10]);
-  
-        svg.append("path")
-            .datum(graticule)
-            .attr("class", "graticule")
-            .attr("d", path)
-            .style("fill", "#fff")
-            .style("stroke", "#ccc");
-    }     
 }
