@@ -6,16 +6,38 @@
     <title>UW Solar Visualization</title>
 
     <!-- UI Dependencies -->
+    <link rel="stylesheet" href="styles.css" />
 
     <!-- Functional Dependencies -->
     <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script src="https://d3js.org/topojson.v1.min.js"></script>
+
+    <script src="globe.js"></script>
     <script src="script.js"></script>
 
 </head>
 <body>
 
+<svg></svg>
+
 <script>
-    main();
+    // Globe configuration
+    const globe_config = {
+        width: 960,
+        height: 500,
+        map_url: 'https://gist.githubusercontent.com/mbostock/4090846/raw/d534aba169207548a8a3d670c9c2cc719ff05c47/world-110m.json',
+        marker_file: '../data/locations.json',
+        scroll_sens: 75,
+        min_zoom: 0.3,
+        max_zoom: 9,
+        draw_graticule: false,
+    }
+
+    // Create globe
+    const svg = d3.select('svg')
+        .attr('width', globe_config.width).attr('height', globe_config.height);
+    CreateGlobe(svg, globe_config);
+    
 </script>
 
 
