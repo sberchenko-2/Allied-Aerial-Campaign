@@ -29,7 +29,9 @@ function CreateGlobe(svg, config) {
           projection      = d3.geoOrthographic(),
           initialScale    = projection.scale(),
           path            = d3.geoPath().projection(projection),
-          center          = [width/2, height/2];
+          center          = [width/2, height/2],
+          tgt_tooltip     = "base_tooltip",
+          tkf_tooltip     = "base_tooltip";
 
     // Plotting data
     var takeoff_locations = [],
@@ -41,55 +43,10 @@ function CreateGlobe(svg, config) {
         show_trgts  = true,
         show_tkofs  = true;
     
-    // Draw globe
+    // Draw globe and enable interaction
     drawGlobe();
-
-    // Enable dragging
-    svg.call(d3.drag().on('drag', (event, d) => {
-        const rotate = projection.rotate()
-        const k = scroll_sens / projection.scale()
-
-        projection.rotate([
-            rotate[0] + event.dx * k,
-            rotate[1] - event.dy * k
-        ])
-
-        drag_path = d3.geoPath().projection(projection)
-        svg.selectAll("path").attr("d", drag_path)
-
-        updateGraph();
-    }));
-
-    // Enable zooming
-    svg.call(d3.zoom().on('zoom', (event, d) => {
-        if (event.transform.k <= min_zoom) {
-            event.transform.k = min_zoom;
-        } else if (event.transform.k >= max_zoom) {
-            event.transform.k = max_zoom;
-        } else {
-            projection.scale(initialScale * event.transform.k)
-            zoom_path = d3.geoPath().projection(projection)
-            svg.selectAll("path").attr("d", zoom_path)
-            updateGraph();
-        }
-    }))
-
-    // Updates the data being displayed on the globe
-    function updateMarkers(takeoff_markers, target_markers, path_data) {
-        console.log("updating markers");
-
-        // Remove old DOM elements
-        planePaths.selectAll("path").remove();
-        targetMarkers.selectAll("circle").remove();
-        takeoffMarkers.selectAll("circle").remove();
-
-        // Update data arrays and draw new markers
-        takeoff_locations = takeoff_markers;
-        target_locations = target_markers;
-        plane_path_data = path_data;
-        
-        updateGraph();
-    }
+    enableDragging();
+    enableZooming();
 
     // Draws the globe onto the svg
     function drawGlobe() {
@@ -143,6 +100,57 @@ function CreateGlobe(svg, config) {
             
             updateGraph();
         });
+    }
+
+    // Enables dragging the globe to rotate it
+    function enableDragging() {
+        svg.call(d3.drag().on('drag', (event, d) => {
+            const rotate = projection.rotate()
+            const k = scroll_sens / projection.scale()
+
+            projection.rotate([
+                rotate[0] + event.dx * k,
+                rotate[1] - event.dy * k
+            ])
+
+            drag_path = d3.geoPath().projection(projection)
+            svg.selectAll("path").attr("d", drag_path)
+
+            updateGraph();
+        }));
+    }
+
+    // Enables zooming in / out of the globe
+    function enableZooming() {
+        svg.call(d3.zoom().on('zoom', (event, d) => {
+            if (event.transform.k <= min_zoom) {
+                event.transform.k = min_zoom;
+            } else if (event.transform.k >= max_zoom) {
+                event.transform.k = max_zoom;
+            } else {
+                projection.scale(initialScale * event.transform.k)
+                zoom_path = d3.geoPath().projection(projection)
+                svg.selectAll("path").attr("d", zoom_path)
+                updateGraph();
+            }
+        }))
+    }
+
+    // Updates the data being displayed on the globe
+    function updateMarkers(takeoff_markers, target_markers, path_data) {
+        console.log("updating markers");
+
+        // Remove old DOM elements
+        planePaths.selectAll("path").remove();
+        targetMarkers.selectAll("circle").remove();
+        takeoffMarkers.selectAll("circle").remove();
+
+        // Update data arrays and draw new markers
+        takeoff_locations = takeoff_markers;
+        target_locations = target_markers;
+        plane_path_data = path_data;
+        
+        updateGraph();
     }
 
     // Draws the paths onto the globe
@@ -213,11 +221,10 @@ function CreateGlobe(svg, config) {
                     let trgt = event.currentTarget;
 
                     // Show tooltip
-                    let tooltip = document.getElementById("base_tooltip");
-                    tooltip.style.visibility = "visible";
-                    tooltip.style.left = event.pageX + "px";
-                    tooltip.style.top = event.pageY + "px";
-                    tooltip.innerHTML = "Base Name: " + d.base_name + "<br/>Theater: " + d.theater;
+                    let tooltip_text = "Base Name: " + d.base_name + "<br/>Theater: " + d.theater;
+                    set_tooltip_pos(tkf_tooltip, event.pageX, event.pageY)
+                    set_tooltip_html(tkf_tooltip, tooltip_text);
+                    show_tooltip(tkf_tooltip);
 
                     d3.select(trgt).transition()
                         .duration('250')
@@ -229,8 +236,7 @@ function CreateGlobe(svg, config) {
                     let trgt = event.currentTarget;
 
                     // Hide tooltip
-                    let tooltip = document.getElementById("base_tooltip");
-                    tooltip.style.visibility = "hidden";
+                    hide_tooltip(tkf_tooltip)
 
                     d3.select(trgt).transition()
                         .duration('250')
@@ -268,14 +274,12 @@ function CreateGlobe(svg, config) {
                 .attr('stroke-width', 2)
                 .on('mouseover', (event, d) => {
                     let trgt = event.currentTarget;
-                    console.log(d)
 
                     // Show tooltip
-                    let tooltip = document.getElementById("base_tooltip");
-                    tooltip.style.visibility = "visible";
-                    tooltip.style.left = event.pageX + "px";
-                    tooltip.style.top = event.pageY + "px";
-                    tooltip.innerHTML = "Target type: " + d.tgt_type;
+                    let tooltip_text = "Target Type: " + d.tgt_type;
+                    set_tooltip_pos(tgt_tooltip, event.pageX, event.pageY)
+                    set_tooltip_html(tgt_tooltip, tooltip_text);
+                    show_tooltip(tgt_tooltip);
 
                     d3.select(trgt).transition()
                         .duration('250')
@@ -287,8 +291,7 @@ function CreateGlobe(svg, config) {
                     let trgt = event.currentTarget;
 
                     // Hide tooltip
-                    let tooltip = document.getElementById("base_tooltip");
-                    tooltip.style.visibility = "hidden";
+                    hide_tooltip(tgt_tooltip);
 
                     d3.select(trgt).transition()
                         .duration('250')
