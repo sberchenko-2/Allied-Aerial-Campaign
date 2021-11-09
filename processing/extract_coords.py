@@ -17,6 +17,10 @@ target_latitude = list(df["LATITUDE"])
 base_names = list(df["TAKEOFF_BASE"])
 theaters = list(df["THEATER"])
 tgt_types = list(df["TGT_TYPE"])
+ac_attackings = list(df["AC_ATTACKING"])
+ac_names = list(df["AIRCRAFT_NAME"])
+total_tons = list(df["TOTAL_TONS"])
+msn_dates = list(df["MSNDATE"])
 
 # Initialize arrays
 takeoff = []
@@ -32,6 +36,10 @@ for i in range(rows):
     base_name = base_names[i]
     theater = theaters[i]
     tgt = tgt_types[i]
+    ac_attacking = ac_attackings[i]
+    ac_name = ac_names[i]
+    total_ton = total_tons[i]
+    msn_date = msn_dates[i]
 
     # Get rid of an entry if any coords are NaN (most of the takeoff coords are NaN)
     if math.isnan(take_lon) or math.isnan(take_lat) or math.isnan(targ_lon) or math.isnan(targ_lat):
@@ -45,7 +53,19 @@ for i in range(rows):
         theater = "Unknown"
 
     if type(tgt) != type(""):
-        tgt = "UNIDENTIFIED TARGET" 
+        tgt = "Unidentified Target" 
+    
+    if math.isnan(ac_attacking):
+        ac_attacking = "Unknown"
+    
+    if type(ac_name) != type(""):
+        ac_name = "Unknown"
+    
+    if math.isnan(total_ton):
+        total_ton = "Unknown"
+    
+    if type(msn_date) != type(""):
+        msn_date = "Unknown"
 
     # I'm pretty sure the Allies didn't fly 300+ missions out of the poles ◔_◔
     if take_lat > 4000 or targ_lat > 4000:
@@ -62,6 +82,10 @@ for i in range(rows):
         "latitude": take_lat,
         "base_name": base_name,
         "theater": theater,
+        "ac_attacking": ac_attacking,
+        "ac_name": ac_name,
+        "total_tons": total_ton,
+        "msn_date": msn_date,
     })
     target.append({
         "longitude": targ_lon,
