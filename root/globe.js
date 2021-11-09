@@ -13,9 +13,7 @@
 //   - min_zoom:        relative min zoom
 function CreateGlobe(svg, config) {
     // Set config vars
-    const width          = config.width,
-          height         = config.height,
-          map_url        = config.map_url,
+    const map_url        = config.map_url,
           target_locals  = config.target_locals,
           takeoff_locals = config.takeoff_locals,
           scroll_sens    = config.scroll_sens,
@@ -29,7 +27,6 @@ function CreateGlobe(svg, config) {
           projection      = d3.geoOrthographic(),
           initialScale    = projection.scale(),
           path            = d3.geoPath().projection(projection),
-          center          = [width/2, height/2],
           tgt_tooltip     = "base_tooltip",
           tkf_tooltip     = "base_tooltip";
 
@@ -209,9 +206,8 @@ function CreateGlobe(svg, config) {
                 .attr('cx', d => projection([d.longitude, d.latitude])[0])
                 .attr('cy', d => projection([d.longitude, d.latitude])[1])
                 .attr('fill', d => {
-                    const coordinate = [d.longitude, d.latitude];
-                    gdistance = d3.geoDistance(coordinate, projection.invert(center));
-                    return gdistance > 1.57 ? 'none' : 'steelblue';
+                    let c = path({type: 'Point', coordinates: [d.longitude, d.latitude]});
+                    return !c ? 'none' : 'steelblue';
                 })
                 .attr('r', marker_size)
 
@@ -265,9 +261,8 @@ function CreateGlobe(svg, config) {
                 .attr('cx', d => projection([d.longitude, d.latitude])[0])
                 .attr('cy', d => projection([d.longitude, d.latitude])[1])
                 .attr('fill', d => {
-                    const coordinate = [d.longitude, d.latitude];
-                    gdistance = d3.geoDistance(coordinate, projection.invert(center));
-                    return gdistance > 1.57 ? 'none' : 'black';
+                    let c = path({type: 'Point', coordinates: [d.longitude, d.latitude]});
+                    return !c ? 'none' : 'black';
                 })
                 .attr('r', marker_size)
 

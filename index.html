@@ -20,35 +20,29 @@
 </head>
 <body>
 
-<svg></svg>
-<div>
-    <input type="checkbox" id="show_paths" name="show_paths" onclick="show_paths_clicked()" checked>
-    <label for="show_paths">Show Flight Paths</label>
-
-    <input type="checkbox" id="show_trgts" name="show_trgts" onclick="show_trgts_clicked()"checked>
-    <label for="show_trgts">Show Target Location</label>
-
-    <input type="checkbox" id="show_tkofs" name="show_tkofs" onclick="show_tkofs_clicked()"checked>
-    <label for="show_tkofs">Show Takeoff Location</label>
+<div id="main_div" class="row_flex">
+    <svg id="d3_svg"></svg>
 </div>
 <span class="tooltip" id="base_tooltip">Test tooltip</span>
 
 <script>
     // Globe configuration
     const globe_config = {
-        width: 960,
-        height: 500,
         map_url: "data/world-110m2.json",
         takeoff_locals: 'data/takeoff_locations.json',
         target_locals: 'data/target_locations.json',
         scroll_sens: 75,
-        min_zoom: 0.3,
+        min_zoom: 1,
         max_zoom: 12,
     }
 
     // Create globe
     const svg = d3.select('svg')
-        .attr('width', globe_config.width).attr('height', globe_config.height);
+        .attr('width', window.innerWidth)
+        .attr('height', window.innerHeight)
+        .style("position", "fixed")
+        .style("top", (window.innerHeight / 2 - 250) + "px")
+        .style("left", (window.innerWidth / 2 - 500) + "px");
     var globe = CreateGlobe(svg, globe_config);
     
     // Example of how to bind update function to a button / etc:

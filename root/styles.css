@@ -1,3 +1,9 @@
+body {
+    height: 100%;
+    margin: 0;
+    overflow: hidden;   
+}
+
 .row_flex {
     display: flex;
     flex-direction: row;
@@ -20,4 +26,14 @@
     /* Position the tooltip */
     position: absolute;
     z-index: 1;
+}
+
+#main_div {
+    background-color: black;
+    width: 100vw;
+    height: 100vh;
+}
+
+#d3_svg {
+    overflow: visible
 }
