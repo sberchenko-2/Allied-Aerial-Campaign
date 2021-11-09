@@ -15,7 +15,7 @@ takeoff_latitude = list(df["TAKEOFF_LATITUDE"])
 target_longitude = list(df["LONGITUDE"])
 target_latitude = list(df["LATITUDE"])
 base_names = list(df["TAKEOFF_BASE"])
-theatres = list(df["THEATER"])
+theaters = list(df["THEATER"])
 
 # Initialize arrays
 takeoff = []
@@ -29,7 +29,7 @@ for i in range(rows):
     targ_lon = target_longitude[i]
     targ_lat = target_latitude[i]
     base_name = base_names[i]
-    theatre = theatres[i]
+    theater = theaters[i]
 
     # Get rid of an entry if any coords are NaN (most of the takeoff coords are NaN)
     if math.isnan(take_lon) or math.isnan(take_lat) or math.isnan(targ_lon) or math.isnan(targ_lat):
@@ -39,8 +39,8 @@ for i in range(rows):
     if type(base_name) != type(""):
         base_name = "Unknown"
     
-    if type(theatre) != type(""):
-        theatre = "Unknown"
+    if type(theater) != type(""):
+        theater = "Unknown"
 
     # I'm pretty sure the Allies didn't fly 300+ missions out of the poles ◔_◔
     if take_lat > 4000 or targ_lat > 4000:
@@ -56,7 +56,7 @@ for i in range(rows):
         "longitude": take_lon,
         "latitude": take_lat,
         "base_name": base_name,
-        "theatre": theatre
+        "theater": theater
     })
     target.append({
         "longitude": targ_lon,
