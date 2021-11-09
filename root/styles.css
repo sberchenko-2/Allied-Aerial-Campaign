@@ -37,3 +37,15 @@ body {
 #d3_svg {
     overflow: visible
 }
+
+#title {
+    position: absolute;
+    color: white;
+    z-index: 2;
+    background-color: gray;
+    padding: 5px 5px;
+    margin: 0 0;
+    border: black;
+    border-bottom-style: double;
+    border-right-style: double;
+}
