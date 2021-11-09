@@ -31,10 +31,15 @@ function CreateGlobe(svg, config) {
           path            = d3.geoPath().projection(projection),
           center          = [width/2, height/2];
 
-    // Marker data
+    // Plotting data
     var takeoff_locations = [],
         target_locations  = [],
         plane_path_data   = [];
+
+    // Globe's variables
+    var show_paths = true,
+        show_trgts  = true,
+        show_tkofs  = true;
     
     // Draw globe
     drawGlobe();
@@ -52,7 +57,7 @@ function CreateGlobe(svg, config) {
         drag_path = d3.geoPath().projection(projection)
         svg.selectAll("path").attr("d", drag_path)
 
-        drawMarkers();
+        updateGraph();
     }));
 
     // Enable zooming
@@ -65,7 +70,7 @@ function CreateGlobe(svg, config) {
             projection.scale(initialScale * event.transform.k)
             zoom_path = d3.geoPath().projection(projection)
             svg.selectAll("path").attr("d", zoom_path)
-            drawMarkers();
+            updateGraph();
         }
     }))
 
@@ -82,7 +87,8 @@ function CreateGlobe(svg, config) {
         takeoff_locations = takeoff_markers;
         target_locations = target_markers;
         plane_path_data = path_data;
-        drawMarkers();
+        
+        updateGraph();
     }
 
     // Draws the globe onto the svg
@@ -123,14 +129,12 @@ function CreateGlobe(svg, config) {
                 }
             }
             
-            drawMarkers();
+            updateGraph();
         });
     }
-  
-    // Draws the markers and paths onto the globe
-    function drawMarkers() {
-        let start = Date.now();
 
+    // Draws the paths onto the globe
+    function drawPaths() {
         // Propagate path data to paths
         const plane_paths = planePaths.selectAll("path")
             .data(plane_path_data);
@@ -143,72 +147,139 @@ function CreateGlobe(svg, config) {
             .merge(plane_paths)
             .style("stroke", "red")
             .style("fill", "none")
-            .style("stroke-width", 3);
+            .style("stroke-width", 3)
+            .on('mouseover', (event, d) => {
+                let trgt = event.currentTarget;
+                d3.select(trgt).transition()
+                    .duration('50')
+                    .style("stroke", "black");  
+                trgt.parentNode.appendChild(trgt);
+            })
+            .on('mouseout', (event, d) => {
+                d3.select(event.currentTarget).transition()
+                    .duration('50')
+                    .style("stroke", "red");
+            });
 
-        console.log("drawing paths took " + (Date.now() - start) + "ms");
-        let marker_start = Date.now();
-
+        // Ensures that the markers and paths are drawn on top of the map
+        planePaths.each(function () {
+            this.parentNode.appendChild(this);
+        });
+    }
+  
+    // Draws the markers onto the globe
+    function drawMarkers() {
         // Scale marker size by current zoom
         var marker_size = 3 * (projection.scale() / initialScale);
         var max_size = 5;
         marker_size = marker_size >= max_size ? max_size : marker_size;
 
-        // Propagate marker data to markers
-        const target_markers = targetMarkers.selectAll('circle')
+        // Draw takeoff markers
+        if (show_tkofs) {
+            // Propagate marker data to markers
+            const takeoff_markers = takeoffMarkers.selectAll('circle')
+                .data(takeoff_locations);
+            
+            // Draw markers
+            takeoff_markers
+                .enter()
+                .append('circle')
+                .merge(takeoff_markers)
+                .attr('cx', d => projection([d.longitude, d.latitude])[0])
+                .attr('cy', d => projection([d.longitude, d.latitude])[1])
+                .attr('fill', d => {
+                    const coordinate = [d.longitude, d.latitude];
+                    gdistance = d3.geoDistance(coordinate, projection.invert(center));
+                    return gdistance > 1.57 ? 'none' : 'steelblue';
+                })
+                .attr('r', marker_size);
+            
+            // Ensures that the markers and paths are drawn on top of the map
+            takeoffMarkers.each(function () {
+                this.parentNode.appendChild(this);
+            });
+        }
+
+        // Draw target markers
+        if (show_trgts) {
+            // Propagate marker data to markers
+            const target_markers = targetMarkers.selectAll('circle')
             .data(target_locations);
-        
-        const takeoff_markers = takeoffMarkers.selectAll('circle')
-            .data(takeoff_locations);
 
-        // Draw markers
-        target_markers
-            .enter()
-            .append('circle')
-            .merge(target_markers)
-            .attr('cx', d => projection([d.longitude, d.latitude])[0])
-            .attr('cy', d => projection([d.longitude, d.latitude])[1])
-            .attr('fill', d => {
-                const coordinate = [d.longitude, d.latitude];
-                gdistance = d3.geoDistance(coordinate, projection.invert(center));
-                return gdistance > 1.57 ? 'none' : 'black';
-            })
-            .attr('r', marker_size);
+            // Draw markers
+            target_markers
+                .enter()
+                .append('circle')
+                .merge(target_markers)
+                .attr('cx', d => projection([d.longitude, d.latitude])[0])
+                .attr('cy', d => projection([d.longitude, d.latitude])[1])
+                .attr('fill', d => {
+                    const coordinate = [d.longitude, d.latitude];
+                    gdistance = d3.geoDistance(coordinate, projection.invert(center));
+                    return gdistance > 1.57 ? 'none' : 'black';
+                })
+                .attr('r', marker_size);
 
-        takeoff_markers
-            .enter()
-            .append('circle')
-            .merge(takeoff_markers)
-            .attr('cx', d => projection([d.longitude, d.latitude])[0])
-            .attr('cy', d => projection([d.longitude, d.latitude])[1])
-            .attr('fill', d => {
-                const coordinate = [d.longitude, d.latitude];
-                gdistance = d3.geoDistance(coordinate, projection.invert(center));
-                return gdistance > 1.57 ? 'none' : 'steelblue';
-            })
-            .attr('r', marker_size);
-        
-        console.log("marker update took " + (Date.now() - marker_start) + "ms");
-        marker_start = Date.now();
-  
-        // Ensures that the markers and paths are drawn on top of the map
-        planePaths.each(function () {
-            this.parentNode.appendChild(this);
-        });      
+            // Ensures that the markers and paths are drawn on top of the map
+            targetMarkers.each(function () {
+                this.parentNode.appendChild(this);
+            });
+        }
+    }
 
-        targetMarkers.each(function () {
-            this.parentNode.appendChild(this);
-        });
-        takeoffMarkers.each(function () {
-            this.parentNode.appendChild(this);
-        });
+    // Update graph's display
+    function updateGraph() {
+        let start = Date.now();
 
-        console.log("move-to-front update took " + (Date.now() - marker_start) + "ms");
-        console.log("total draw update took " + (Date.now() - start) + "ms");
-        console.log("target_markers has " + document.getElementById("target_markers").childElementCount + " children");
-        console.log("takeoff_markers has " + document.getElementById("takeoff_markers").childElementCount + " children");
-        console.log("plane_paths has " + document.getElementById("plane_paths").childElementCount + " children");
+        if (show_paths) {
+            drawPaths();
+        }
+        let path_time = Date.now() - start;
+
+        let section_start = Date.now();
+        drawMarkers();
+        let marker_time = Date.now() - section_start;
+
+        console.log("drawing paths took " + path_time + "ms");
+        console.log("drawing markers took " + marker_time + "ms");
+        console.log("update cycle took " + (Date.now() - start) + "ms");
         console.log(" ");
     }
 
-    return updateMarkers;
+    function set_show_paths(val) {
+        show_paths = val;
+
+        if (!show_paths) {
+            planePaths.selectAll("path").remove();
+        } else {
+            updateGraph();
+        }
+    }
+
+    function set_show_tkofs(val) {
+        show_tkofs = val;
+
+        if (!show_tkofs) {
+            takeoffMarkers.selectAll("circle").remove();
+        } else {
+            updateGraph();
+        }
+    }
+
+    function set_show_trgts(val) {
+        show_trgts = val;
+
+        if (!show_trgts) {
+            targetMarkers.selectAll("circle").remove();
+        } else {
+            updateGraph();
+        }
+    }
+
+    return {
+        updateMarkers: updateMarkers,
+        set_show_paths: set_show_paths,
+        set_show_tkofs: set_show_tkofs,
+        set_show_trgts: set_show_trgts
+    };
 }

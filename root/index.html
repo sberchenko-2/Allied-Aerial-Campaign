@@ -19,6 +19,16 @@
 <body>
 
 <svg></svg>
+<div>
+    <input type="checkbox" id="show_paths" name="show_paths" onclick="show_paths_clicked()" checked>
+    <label for="show_paths">Show Flight Paths</label>
+
+    <input type="checkbox" id="show_trgts" name="show_trgts" onclick="show_trgts_clicked()"checked>
+    <label for="show_trgts">Show Target Location</label>
+
+    <input type="checkbox" id="show_tkofs" name="show_tkofs" onclick="show_tkofs_clicked()"checked>
+    <label for="show_tkofs">Show Takeoff Location</label>
+</div>
 
 <script>
     // Globe configuration
@@ -36,7 +46,7 @@
     // Create globe
     const svg = d3.select('svg')
         .attr('width', globe_config.width).attr('height', globe_config.height);
-    let updateMarkers = CreateGlobe(svg, globe_config);
+    var globe = CreateGlobe(svg, globe_config);
     
     // Example of how to bind update function to a button / etc:
     //
