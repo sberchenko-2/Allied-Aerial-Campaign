@@ -205,7 +205,28 @@ function CreateGlobe(svg, config) {
                     gdistance = d3.geoDistance(coordinate, projection.invert(center));
                     return gdistance > 1.57 ? 'none' : 'steelblue';
                 })
-                .attr('r', marker_size);
+                .attr('r', marker_size)
+                
+                .style('cursor', 'pointer')
+                .style("stroke-width", 2)
+                .on('mouseover', (event, d) => {
+                    let trgt = event.currentTarget;
+                    console.log(d)
+
+                    d3.select(trgt).transition()
+                        .duration('250')
+                        .style("stroke", "white")
+                        .attr("r", marker_size + 2)
+                    trgt.parentNode.appendChild(trgt);
+                })
+                .on('mouseout', (event, d) => {
+                    let trgt = event.currentTarget;
+                    d3.select(trgt).transition()
+                        .duration('250')
+                        .style("stroke", "none")
+                        .attr("r", marker_size);
+                    trgt.parentNode.appendChild(trgt);
+                });
             
             // Ensures that the markers and paths are drawn on top of the map
             takeoffMarkers.each(function () {
