@@ -4,6 +4,7 @@ Used to extract takeoff + target coordinates from the THOR dataset into json
 import json
 import pandas as pd
 import math
+import string
 
 # Load in dataset
 src_dir = "C:/Users/sberc/Documents/My Files/UW/Classes/Computer Science/CSE 442/UW-Solar-Visualization"
@@ -76,6 +77,19 @@ for i in range(rows):
        abs(take_lat - 31.87) <= 0.1 and abs(take_lon - 24.40) <= 0.1:
         continue
     
+    # Make strings look nice
+    tgt = string.capwords(tgt)
+    
+    base_name = string.capwords(base_name)
+    base_name = base_name.replace("Raf ", "RAF ")
+
+    org = ac_name
+    ac_name = string.capwords(ac_name)
+    for e in org:
+        if e.isdigit():
+            ac_name = org
+            break
+
     # Add coords to arrays
     takeoff.append({
         "longitude": take_lon,
@@ -90,7 +104,7 @@ for i in range(rows):
     target.append({
         "longitude": targ_lon,
         "latitude": targ_lat,
-        "tgt_type": tgt
+        "tgt_type": tgt,
     })
 
 print(f"Originally had {rows} datapoints, after cleaning only have {len(target)}")
