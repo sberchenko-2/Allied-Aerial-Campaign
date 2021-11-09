@@ -263,7 +263,39 @@ function CreateGlobe(svg, config) {
                     gdistance = d3.geoDistance(coordinate, projection.invert(center));
                     return gdistance > 1.57 ? 'none' : 'black';
                 })
-                .attr('r', marker_size);
+                .attr('r', marker_size)
+
+                .attr('stroke-width', 2)
+                .on('mouseover', (event, d) => {
+                    let trgt = event.currentTarget;
+                    console.log(d)
+
+                    // Show tooltip
+                    let tooltip = document.getElementById("base_tooltip");
+                    tooltip.style.visibility = "visible";
+                    tooltip.style.left = event.pageX + "px";
+                    tooltip.style.top = event.pageY + "px";
+                    tooltip.innerHTML = "Target type: " + d.tgt_type;
+
+                    d3.select(trgt).transition()
+                        .duration('250')
+                        .style("stroke", "white")
+                        .attr("r", marker_size + 2)
+                    trgt.parentNode.appendChild(trgt);
+                })
+                .on('mouseout', (event, d) => {
+                    let trgt = event.currentTarget;
+
+                    // Hide tooltip
+                    let tooltip = document.getElementById("base_tooltip");
+                    tooltip.style.visibility = "hidden";
+
+                    d3.select(trgt).transition()
+                        .duration('250')
+                        .style("stroke", "none")
+                        .attr("r", marker_size);
+                    trgt.parentNode.appendChild(trgt);
+                });
 
             // Ensures that the markers and paths are drawn on top of the map
             targetMarkers.each(function () {
