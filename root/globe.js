@@ -121,13 +121,16 @@ function CreateGlobe(svg, config) {
                 }
             }
             
-            updateGraph();
+            drawPaths();
+            drawMarkers();
         });
     }
 
     // Enables dragging the globe to rotate it
     function enableDragging() {
         svg.call(d3.drag().on('drag', (event, d) => {
+            // start = Date.now();
+
             const rotate = projection.rotate()
             const k = scroll_sens / projection.scale()
 
@@ -138,8 +141,9 @@ function CreateGlobe(svg, config) {
 
             drag_path = d3.geoPath().projection(projection)
             svg.selectAll("path").attr("d", drag_path)
+            drawMarkers()
 
-            updateGraph();
+            // console.log("Applying projection: " + (Date.now() - start) + "ms")
         }));
     }
 
@@ -154,14 +158,13 @@ function CreateGlobe(svg, config) {
                 projection.scale(initialScale * event.transform.k)
                 zoom_path = d3.geoPath().projection(projection)
                 svg.selectAll("path").attr("d", zoom_path)
-                updateGraph();
+                drawMarkers()
             }
         }))
     }
 
     // Updates the data being displayed on the globe
     function updateMarkers(takeoff_markers, target_markers, path_data) {
-        console.log("updating markers");
 
         // Remove old DOM elements
         planePaths.selectAll("path").remove();
@@ -172,8 +175,6 @@ function CreateGlobe(svg, config) {
         takeoff_locations = takeoff_markers;
         target_locations = target_markers;
         plane_path_data = path_data;
-        
-        updateGraph();
     }
 
     // Draws the paths onto the globe
@@ -238,6 +239,8 @@ function CreateGlobe(svg, config) {
         .data(target_locations);
 
         // Draw markers
+        let target_enter = target_markers.enter();
+        
         target_markers
             .enter()
             .append('circle')
@@ -337,23 +340,6 @@ function CreateGlobe(svg, config) {
         takeoffMarkers.each(function () {
             this.parentNode.appendChild(this);
         });
-    }
-
-    // Update graph's display
-    function updateGraph() {
-        let start = Date.now();
-
-        drawPaths();
-        let path_time = Date.now() - start;
-
-        let section_start = Date.now();
-        drawMarkers();
-        let marker_time = Date.now() - section_start;
-
-        console.log("drawing paths took " + path_time + "ms");
-        console.log("drawing markers took " + marker_time + "ms");
-        console.log("update cycle took " + (Date.now() - start) + "ms");
-        console.log(" ");
     }
 
     return {
