@@ -49,3 +49,41 @@ body {
     border-bottom-style: double;
     border-right-style: double;
 }
+
+#legend {
+    position: absolute;
+    background-color: white;
+    padding: 5px 5px;
+    color: white;
+    z-index: 2;
+    top: 75px;
+    
+    border: black;
+    border-style: double;
+    border-radius: 5px;
+    border-width: 5px;
+}
+
+#legend_title {
+    color: black;
+    font-weight: bold;
+    margin: 0 0 10px 0;
+    padding: 0 0 5px 0;
+    font-size: 24pt;
+    border: black;
+    border-bottom-style: dashed;
+}
+
+.legend_text {
+    color: black;
+    margin: 5px 0;
+}
+
+.circle {
+    height: 25px;
+    width: 25px;
+    border-radius: 50%;
+    display: inline-block;
+    margin: 0 5px 0 0;
+
+}
