@@ -60,6 +60,7 @@ function CreateGlobe(svg, config) {
             let targetData = values[0];
             let takeoffData = values[1];
             let worldData = values[2];
+            console.log(worldData)
 
             // Add background
             svg.append('path')
@@ -70,18 +71,17 @@ function CreateGlobe(svg, config) {
                 .attr('fill', 'lightblue')
                 .attr('d', path);
 
-            svg.selectAll(".segment")
-                .data(topojson.feature(worldData, worldData.objects.countries).features)
+            svg.selectAll(".path")
+                .data(worldData.features)
                 .enter().append("path")
-                .attr("class", "segment")
+                .attr("class", "path")
                 .attr("d", path)
                 .style("stroke", "#888")
                 .style("stroke-width", "1px")
-                .style("fill", (d, i) => '#e5e5e5')
-                .style("opacity", ".6")
-                .style('cursor', 'grab');
-            
-            svg.style("fill", "blue");
+                .style("fill", function (d, i) { return '#e5e5e5'})
+                .style("opacity", "0.6")
+                .style('cursor', 'grab')
+                ;
             
             target_locations = targetData;
             takeoff_locations = takeoffData;
