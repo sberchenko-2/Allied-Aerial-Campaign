@@ -48,6 +48,8 @@ function CreateGlobe(svg, config) {
             target_locals,
             takeoff_locals,
             map_url,
+            "data/allied_territory.json",
+            "data/axis_territory.json",
         ];
 
         // Load files then draw data
@@ -55,8 +57,10 @@ function CreateGlobe(svg, config) {
             let targetData = values[0];
             let takeoffData = values[1];
             let worldData = values[2];
+            let allied_territory = values[3].territories;
+            let axis_territory = values[4].territories;
 
-            let country_colors = ["#CBE7BE"];
+            let country_colors = ["blue", "gray", "#CBE7BE"];
             let num_colors = country_colors.length;
             let color_scale = d3.scaleOrdinal()
                                 .domain([1, 4])
@@ -78,7 +82,16 @@ function CreateGlobe(svg, config) {
                 .attr("d", path)
                 .style("stroke", "#888")
                 .style("stroke-width", "1px")
-                .style("fill", (d, i) => color_scale(i % num_colors))
+                .style("fill", function (d, i) {
+                    let country = d.properties.NAME;
+                    if (allied_territory.includes(country)) {
+                        return country_colors[0];
+                    } else if (axis_territory.includes(country)) {
+                        return country_colors[1];
+                    } else {
+                        return country_colors[2];
+                    }
+                })
                 .style("opacity", "0.6")
                 .style('cursor', 'grab')
                 .on('mouseover', (event, d) => {
@@ -129,7 +142,7 @@ function CreateGlobe(svg, config) {
     // Enables dragging the globe to rotate it
     function enableDragging() {
         svg.call(d3.drag().on('drag', (event, d) => {
-            // start = Date.now();
+            start = Date.now();
 
             const rotate = projection.rotate()
             const k = scroll_sens / projection.scale()
@@ -143,7 +156,7 @@ function CreateGlobe(svg, config) {
             svg.selectAll("path").attr("d", drag_path)
             drawMarkers()
 
-            // console.log("Applying projection: " + (Date.now() - start) + "ms")
+            console.log("Applying projection: " + (Date.now() - start) + "ms")
         }));
     }
 
