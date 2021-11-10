@@ -35,11 +35,6 @@ function CreateGlobe(svg, config) {
     var takeoff_locations = [],
         target_locations  = [],
         plane_path_data   = [];
-
-    // Globe's variables
-    var show_paths = true,
-        show_trgts  = true,
-        show_tkofs  = true;
     
     // Draw globe and enable interaction
     drawGlobe();
@@ -60,7 +55,12 @@ function CreateGlobe(svg, config) {
             let targetData = values[0];
             let takeoffData = values[1];
             let worldData = values[2];
-            console.log(worldData)
+
+            let country_colors = ["#CBE7BE"];
+            let num_colors = country_colors.length;
+            let color_scale = d3.scaleOrdinal()
+                                .domain([1, 4])
+                                .range(country_colors)
 
             // Add background
             svg.append('path')
@@ -78,10 +78,31 @@ function CreateGlobe(svg, config) {
                 .attr("d", path)
                 .style("stroke", "#888")
                 .style("stroke-width", "1px")
-                .style("fill", function (d, i) { return '#e5e5e5'})
+                .style("fill", (d, i) => color_scale(i % num_colors))
                 .style("opacity", "0.6")
                 .style('cursor', 'grab')
-                ;
+                .on('mouseover', (event, d) => {
+                    let trgt = event.currentTarget;
+
+                    // Show tooltip
+                    let tooltip_text = d.properties.NAME;
+                    set_tooltip_pos(tgt_tooltip, event.pageX, event.pageY)
+                    set_tooltip_html(tgt_tooltip, tooltip_text);
+                    show_tooltip(tgt_tooltip);
+
+                    d3.select(trgt).transition()
+                        .duration('250')
+                        .style("opacity", "1")
+                })
+                .on('mouseout', (event, d) => {
+                    let trgt = event.currentTarget;
+
+                    hide_tooltip(tgt_tooltip);
+
+                    d3.select(trgt).transition()
+                        .duration('250')
+                        .style("opacity", "0.6")
+                })
             
             target_locations = targetData;
             takeoff_locations = takeoffData;
@@ -211,122 +232,118 @@ function CreateGlobe(svg, config) {
         marker_size = marker_size >= max_size ? max_size : marker_size;
 
         // Draw target markers
-        if (show_trgts) {
-            // Propagate marker data to markers
-            const target_markers = targetMarkers.selectAll('circle')
-            .data(target_locations);
 
-            // Draw markers
-            target_markers
-                .enter()
-                .append('circle')
-                .merge(target_markers)
-                .attr('cx', d => projection([d.longitude, d.latitude])[0])
-                .attr('cy', d => projection([d.longitude, d.latitude])[1])
-                .attr('fill', d => {
-                    let c = path({type: 'Point', coordinates: [d.longitude, d.latitude]});
-                    return !c ? 'none' : 'black';
-                })
-                .attr('r', marker_size)
+        // Propagate marker data to markers
+        const target_markers = targetMarkers.selectAll('circle')
+        .data(target_locations);
 
-                .attr('stroke-width', 2)
-                .on('mouseover', (event, d) => {
-                    let trgt = event.currentTarget;
+        // Draw markers
+        target_markers
+            .enter()
+            .append('circle')
+            .merge(target_markers)
+            .attr('cx', d => projection([d.longitude, d.latitude])[0])
+            .attr('cy', d => projection([d.longitude, d.latitude])[1])
+            .attr('fill', d => {
+                let c = path({type: 'Point', coordinates: [d.longitude, d.latitude]});
+                return !c ? 'none' : 'black';
+            })
+            .attr('r', marker_size)
 
-                    // Show tooltip
-                    let tooltip_text = "Target Type: " + d.tgt_type;
-                    set_tooltip_pos(tgt_tooltip, event.pageX, event.pageY)
-                    set_tooltip_html(tgt_tooltip, tooltip_text);
-                    show_tooltip(tgt_tooltip);
+            .attr('stroke-width', 2)
+            .on('mouseover', (event, d) => {
+                let trgt = event.currentTarget;
 
-                    d3.select(trgt).transition()
-                        .duration('250')
-                        .style("stroke", "white")
-                        .attr("r", marker_size + 2)
-                    trgt.parentNode.appendChild(trgt);
-                })
-                .on('mouseout', (event, d) => {
-                    let trgt = event.currentTarget;
+                // Show tooltip
+                let tooltip_text = "Target Type: " + d.tgt_type;
+                set_tooltip_pos(tgt_tooltip, event.pageX, event.pageY)
+                set_tooltip_html(tgt_tooltip, tooltip_text);
+                show_tooltip(tgt_tooltip);
 
-                    // Hide tooltip
-                    hide_tooltip(tgt_tooltip);
+                d3.select(trgt).transition()
+                    .duration('250')
+                    .style("stroke", "white")
+                    .attr("r", marker_size + 2)
+                trgt.parentNode.appendChild(trgt);
+            })
+            .on('mouseout', (event, d) => {
+                let trgt = event.currentTarget;
 
-                    d3.select(trgt).transition()
-                        .duration('250')
-                        .style("stroke", "none")
-                        .attr("r", marker_size);
-                    trgt.parentNode.appendChild(trgt);
-                });
+                // Hide tooltip
+                hide_tooltip(tgt_tooltip);
 
-            // Ensures that the markers and paths are drawn on top of the map
-            targetMarkers.each(function () {
-                this.parentNode.appendChild(this);
+                d3.select(trgt).transition()
+                    .duration('250')
+                    .style("stroke", "none")
+                    .attr("r", marker_size);
+                trgt.parentNode.appendChild(trgt);
             });
-        }
+
+        // Ensures that the markers and paths are drawn on top of the map
+        targetMarkers.each(function () {
+            this.parentNode.appendChild(this);
+        });
         
         // Draw takeoff markers
-        if (show_tkofs) {
-            // Propagate marker data to markers
-            const takeoff_markers = takeoffMarkers.selectAll('circle')
-                .data(takeoff_locations);
+        
+        // Propagate marker data to markers
+        const takeoff_markers = takeoffMarkers.selectAll('circle')
+            .data(takeoff_locations);
             
-            // Draw markers
-            takeoff_markers
-                .enter()
-                .append('circle')
-                .merge(takeoff_markers)
-                .attr('cx', d => projection([d.longitude, d.latitude])[0])
-                .attr('cy', d => projection([d.longitude, d.latitude])[1])
-                .attr('fill', d => {
-                    let c = path({type: 'Point', coordinates: [d.longitude, d.latitude]});
-                    return !c ? 'none' : 'steelblue';
-                })
-                .attr('r', marker_size)
+        // Draw markers
+        takeoff_markers
+            .enter()
+            .append('circle')
+            .merge(takeoff_markers)
+            .attr('cx', d => projection([d.longitude, d.latitude])[0])
+            .attr('cy', d => projection([d.longitude, d.latitude])[1])
+            .attr('fill', d => {
+                let c = path({type: 'Point', coordinates: [d.longitude, d.latitude]});
+                return !c ? 'none' : 'steelblue';
+            })
+            .attr('r', marker_size)
 
-                .style('cursor', 'pointer')
-                .style("stroke-width", 2)
-                .on('mouseover', (event, d) => {
-                    let trgt = event.currentTarget;
+            .style('cursor', 'pointer')
+            .style("stroke-width", 2)
+            .on('mouseover', (event, d) => {
+                let trgt = event.currentTarget;
 
-                    // Show tooltip
-                    let tooltip_text = "Base Name: " + d.base_name;
-                    set_tooltip_pos(tkf_tooltip, event.pageX, event.pageY)
-                    set_tooltip_html(tkf_tooltip, tooltip_text);
-                    show_tooltip(tkf_tooltip);
+                // Show tooltip
+                let tooltip_text = "Base Name: " + d.base_name;
+                set_tooltip_pos(tkf_tooltip, event.pageX, event.pageY)
+                set_tooltip_html(tkf_tooltip, tooltip_text);
+                show_tooltip(tkf_tooltip);
 
-                    d3.select(trgt).transition()
-                        .duration('250')
-                        .style("stroke", "white")
-                        .attr("r", marker_size + 2)
-                    trgt.parentNode.appendChild(trgt);
-                })
-                .on('mouseout', (event, d) => {
-                    let trgt = event.currentTarget;
+                d3.select(trgt).transition()
+                    .duration('250')
+                    .style("stroke", "white")
+                    .attr("r", marker_size + 2)
+                trgt.parentNode.appendChild(trgt);
+            })
+            .on('mouseout', (event, d) => {
+                let trgt = event.currentTarget;
 
-                    // Hide tooltip
-                    hide_tooltip(tkf_tooltip)
+                // Hide tooltip
+                hide_tooltip(tkf_tooltip)
 
-                    d3.select(trgt).transition()
-                        .duration('250')
-                        .style("stroke", "none")
-                        .attr("r", marker_size);
-                    trgt.parentNode.appendChild(trgt);
-                });
-            
-            // Ensures that the markers and paths are drawn on top of the map
-            takeoffMarkers.each(function () {
-                this.parentNode.appendChild(this);
+                d3.select(trgt).transition()
+                    .duration('250')
+                    .style("stroke", "none")
+                    .attr("r", marker_size);
+                trgt.parentNode.appendChild(trgt);
             });
-        }
+            
+        // Ensures that the markers and paths are drawn on top of the map
+        takeoffMarkers.each(function () {
+            this.parentNode.appendChild(this);
+        });
     }
 
     // Update graph's display
     function updateGraph() {
         let start = Date.now();
 
-        if (show_paths) {
-            drawPaths();
-        }
+        drawPaths();
         let path_time = Date.now() - start;
 
         let section_start = Date.now();
@@ -339,40 +356,7 @@ function CreateGlobe(svg, config) {
         console.log(" ");
     }
 
-    function set_show_paths(val) {
-        show_paths = val;
-
-        if (!show_paths) {
-            planePaths.selectAll("path").remove();
-        } else {
-            updateGraph();
-        }
-    }
-
-    function set_show_tkofs(val) {
-        show_tkofs = val;
-
-        if (!show_tkofs) {
-            takeoffMarkers.selectAll("circle").remove();
-        } else {
-            updateGraph();
-        }
-    }
-
-    function set_show_trgts(val) {
-        show_trgts = val;
-
-        if (!show_trgts) {
-            targetMarkers.selectAll("circle").remove();
-        } else {
-            updateGraph();
-        }
-    }
-
     return {
-        updateMarkers: updateMarkers,
-        set_show_paths: set_show_paths,
-        set_show_tkofs: set_show_tkofs,
-        set_show_trgts: set_show_trgts
+        updateMarkers: updateMarkers
     };
 }
