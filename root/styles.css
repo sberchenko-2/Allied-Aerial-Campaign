@@ -87,3 +87,10 @@ body {
     margin: 0 5px 0 0;
 
 }
+
+#code_link {
+    color: aqua;
+    top: 94vh;
+    left: 90vw;
+    position: absolute;
+}
