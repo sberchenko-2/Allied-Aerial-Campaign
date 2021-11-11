@@ -60,7 +60,7 @@ function CreateGlobe(svg, config) {
             let allied_territory = values[3].territories;
             let axis_territory = values[4].territories;
 
-            let country_colors = ["blue", "gray", "#CBE7BE"];
+            let country_colors = ["blue", "gray", "#82A775"];
             let num_colors = country_colors.length;
             let color_scale = d3.scaleOrdinal()
                                 .domain([1, 4])
