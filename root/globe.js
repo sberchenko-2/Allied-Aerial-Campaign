@@ -60,7 +60,7 @@ function CreateGlobe(svg, config) {
             let allied_territory = values[3].territories;
             let axis_territory = values[4].territories;
 
-            let country_colors = ["blue", "gray", "#82A775"];
+            let country_colors = ["blue", "#6a6a6a", "#66835c"];
             let num_colors = country_colors.length;
             let color_scale = d3.scaleOrdinal()
                                 .domain([1, 4])
@@ -80,7 +80,7 @@ function CreateGlobe(svg, config) {
                 .enter().append("path")
                 .attr("class", "path")
                 .attr("d", path)
-                .style("stroke", "#888")
+                .style("stroke", "#b0b0b0")
                 .style("stroke-width", "1px")
                 .style("fill", function (d, i) {
                     let country = d.properties.NAME;
@@ -262,7 +262,7 @@ function CreateGlobe(svg, config) {
             .attr('cy', d => projection([d.longitude, d.latitude])[1])
             .attr('fill', d => {
                 let c = path({type: 'Point', coordinates: [d.longitude, d.latitude]});
-                return !c ? 'none' : 'black';
+                return !c ? 'none' : 'goldenrod';
             })
             .attr('r', marker_size)
 
@@ -315,7 +315,7 @@ function CreateGlobe(svg, config) {
             .attr('cy', d => projection([d.longitude, d.latitude])[1])
             .attr('fill', d => {
                 let c = path({type: 'Point', coordinates: [d.longitude, d.latitude]});
-                return !c ? 'none' : 'steelblue';
+                return !c ? 'none' : 'black';
             })
             .attr('r', marker_size)
 
